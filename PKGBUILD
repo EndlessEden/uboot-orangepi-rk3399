@@ -1,56 +1,72 @@
 # U-Boot: Orange Pi 4
-# Maintainer: Kevin Mihelich <kevin@archlinuxarm.org>
-# Maintainer: Joseph Kogut <joseph.kogut@gmail.com>
-
+######################
+# Current Maintainer: endlesseden <https://github.com/EndlessEden/>
+######################
+#
+# Original Maintainer: Kevin Mihelich <kevin@archlinuxarm.org>
+# Original Maintainer: Joseph Kogut <joseph.kogut@gmail.com>
+# 
+######################
+# NOTE: Much of this is now adapted from Manjaro-Arm (https://gitlab.manjaro.org/manjaro-arm/packages/core/uboot-orangepi4-lts/-/blob/main/PKGBUILD)
+######################
 buildarch=8
+opi4ver=2 # 1: OrangePI 4 | 2: OrangePI 4 LTS
 
-pkgname=uboot-orangepi4
-pkgver=2021.01
-pkgrel=1
-_srcname=u-boot-${pkgver}
-pkgdesc="U-Boot for Orange Pi 4"
+if [ "$opi4ver" == "1" ]; then
+	pkgname=uboot-orangepi4
+	pkgdesc="U-Boot for Orange Pi 4"
+elif [ "$opi4ver" == "2" ]; then
+	pkgname=uboot-orangepi4-lts
+	pkgdesc="U-Boot for Orange Pi 4 LTS"
+fi
+pkgver=2023.01
+pkgrel=2
 arch=('x86_64' 'aarch64')
 url='http://www.denx.de/wiki/U-Boot/WebHome'
 license=('GPL')
-backup=('boot/boot.txt' 'boot/boot.scr')
-makedepends=('bc' 'git' 'dtc')
+backup=('boot/extlinux/extlinux.conf')
+makedepends=('bc' 'git' 'dtc' 'python-setuptools' 'swig')
 options=(!distcc !strip !ccache)
 install=${pkgname}.install
-atfver=2.3
-opi4_patch_sha=6e40789
-source=("ftp://ftp.denx.de/pub/u-boot/u-boot-${pkgver}.tar.bz2"
-	"https://github.com/ARM-software/arm-trusted-firmware/archive/v${atfver}.tar.gz"
-	"https://raw.githubusercontent.com/armbian/build/${opi4_patch_sha}/patch/u-boot/u-boot-rockchip64-mainline/add-board-orangepi-4.patch"
-        'boot.txt'
-        'mkscr')
-md5sums=('a3206df1c1b97df7a4ddcdd17cb97d0c'
-         '06ad72bdf63b922a3f3865d81f5d9ad2'
-         '40cb0841f3f76b3e45c3b0f927cefa46'
-         '743a5578cd1a2c7effae08a82bd63856'
-         '021623a04afd29ac3f368977140cfbfd')
+_tfver="2.8"
+_tfaver="2.8"
+source=("https://ftp.denx.de/pub/u-boot/u-boot-${pkgver/rc/-rc}.tar.bz2"
+	"https://github.com/ARM-software/arm-trusted-firmware/archive/v${_tfaver}.tar.gz"
+	"0001-mmc-sdhci-allow-disabling-sdma-in-spl.patch"    # From list: https://patchwork.ozlabs.org/project/uboot/patch/20220222013131.3114990-3-pgwipeout@gmail.com/
+        "0002-add-arm64-dts-rockchip-orangepi-4-lts.patch"
+	"0003-add-arm64-dts-rockchip-orangepi-4.patch")
+sha256sums=('69423bad380f89a0916636e89e6dcbd2e4512d584308d922d1039d1e4331950f'
+            '42256fa354f32b09972e72e0570a0f73698785927f93163b1d1308c485fcb4a6'
+            '7014c3f1ada93536787a4ce30b484dfe651c339391bd46869c61933825a0edcc'
+            '48a737548fab5e95471ce9ae58becbb1351058f9b5ce8cb12c212de77bedb511'
+	    'f348d1e7757395e1e6d639e39566cae1b48574dbdfbf7f2915715a7ad5b556d4')
+
 
 PHOST="$CARCH"	
 case "$CARCH" in	
     aarch64) makedepends+=('gcc-arm-none-eabi' 'gcc')	
             ;;	
-    x86_64) source+=('gcc-arm-8.2-2019.01-x86_64-arm-eabi.tar.xz::https://developer.arm.com/-/media/Files/downloads/gnu-a/8.2-2019.01/gcc-arm-8.2-2019.01-x86_64-arm-eabi.tar.xz?revision=72b9b9ec-30c5-4543-ae95-3d840eb01dae&la=en&hash=C898D59AC42008ED0527538ADF200C11F3E8F53A'	
-             'gcc-arm-8.2-2019.01-x86_64-aarch64-linux-gnu.tar.xz::https://developer.arm.com/-/media/Files/downloads/gnu-a/8.2-2019.01/gcc-arm-8.2-2019.01-x86_64-aarch64-linux-gnu.tar.xz?revision=21270570-4ec0-4bad-a9e1-09707614066a&la=en&hash=AFEDF645AF5B94336DB4E1E608806CEC87A02B8A')	
-            md5sums+=('fc11c4f55085c613133d7527a00fed8a'	
-                      'ed467a18abc7cf81d53c0cf6014b1867')          	
+    x86_64) source+=('gcc-arm-10.3-2021.07-x86_64-arm-none-eabi.tar.xz::https://developer.arm.com/-/media/Files/downloads/gnu-a/10.3-2021.07/binrel/gcc-arm-10.3-2021.07-x86_64-arm-none-eabi.tar.xz?rev=325890dc39394ec49a112e5a661f6497&hash=2BF5AF893AEBA55524D3E0F6A010ACE8'	
+             'gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu.tar.xz::https://developer.arm.com/-/media/Files/downloads/gnu-a/10.3-2021.07/binrel/gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu.tar.xz?rev=1cb9c51b94f54940bdcccd791451cec3&hash=A56CA491FA630C98F7162BC1A302F869')	
+            sha256sums+=('45225813f74e0c3f76af2715d30d1fbebb873c1abe7098f9c694e5567cc2279c'
+            '1e33d53dea59c8de823bbdfe0798280bdcd138636c7060da9d77a97ded095a84')          	
             _pkgarch="aarch64"	
             CARCH="aarch64"	
-            CHOST="aarch64-linux-gnu-"	
+            CHOST="aarch64-none-linux-gnu-"	
             export PATH="${srcdir}/aarch64/bin:${PATH}"	
             export ARCH='aarch64'	
-            export CROSS_COMPILE='aarch64-linux-gnu-'	
+            export CROSS_COMPILE='aarch64-none-linux-gnu-'	
             ;;	
 esac	
 
 prepare() {
-  cd ${srcdir}/${_srcname}
-  patch -p1 -i ../add-board-orangepi-4.patch
+  cd ${srcdir}/u-boot-${pkgver/rc/-rc}
 
-  if [ -e ${srcdir}/gcc-arm-8.2-2019.01-x86_64-aarch64-linux-gnu.tar.xz ]; then	
+  patch -N -p1 -i "${srcdir}/0001-mmc-sdhci-allow-disabling-sdma-in-spl.patch"  	# RK3399 suspend/resume
+  patch -N -p1 -i "${srcdir}/0002-add-arm64-dts-rockchip-orangepi-4-lts.patch"		# OrangePi 4 LTS support
+  patch -N -p1 -i "${srcdir}/0003-add-arm64-dts-rockchip-orangepi-4.patch"              # OrangePi 4 support
+
+  if [ -e ${srcdir}/gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu.tar.xz ]; then	
     if [ -d ${srcdir}/aarch64 ]; then	
         rm -r ${srcdir}/aarch64 	
     fi	
@@ -58,43 +74,15 @@ prepare() {
     cd ${srcdir}/	
     mkdir aarch64	
     cd aarch64	
-    cp -r ../gcc-arm-8.2-2019.01-x86_64-aarch64-linux-gnu/* ./	
-    cp -r ../gcc-arm-8.2-2019.01-x86_64-arm-eabi/* ./	
-    echo "symbolic linking arm-eabi to arm-none-eabi"	
-    cd bin	
-    ln -s arm-eabi-addr2line arm-none-eabi-addr2line	
-    ln -s arm-eabi-c++filt arm-none-eabi-c++filt	
-    ln -s arm-eabi-gcc arm-none-eabi-gcc	
-    ln -s arm-eabi-gcc-ranlib arm-none-eabi-gcc-ranlib	
-    ln -s arm-eabi-gdb arm-none-eabi-gdb	
-    ln -s arm-eabi-ld.bfd arm-none-eabi-ld.bfd	
-    ln -s arm-eabi-ranlib arm-none-eabi-ranlib	
-    ln -s arm-eabi-strip arm-none-eabi-strip	
-    ln -s arm-eabi-ar arm-none-eabi-ar	
-    ln -s arm-eabi-cpp arm-none-eabi-cpp	
-    ln -s arm-eabi-gcc-8.2.1 arm-none-eabi-gcc-8.2.1	
-    ln -s arm-eabi-gcov arm-none-eabi-gcov	
-    ln -s arm-eabi-gfortran arm-none-eabi-gfortran	
-    ln -s arm-eabi-nm arm-none-eabi-nm	
-    ln -s arm-eabi-readelf arm-none-eabi-readelf	
-    ln -s arm-eabi-as arm-none-eabi-as	
-    ln -s arm-eabi-elfedit arm-none-eabi-elfedit	
-    ln -s arm-eabi-gcc-ar arm-none-eabi-gcc-ar	
-    ln -s arm-eabi-gcov-dump arm-none-eabi-gcov-dump	
-    ln -s arm-eabi-gprof arm-none-eabi-gprof	
-    ln -s arm-eabi-objcopy arm-none-eabi-objcopy	
-    ln -s arm-eabi-size arm-none-eabi-size	
-    ln -s arm-eabi-c++ arm-none-eabi-c++	
-    ln -s arm-eabi-g++ arm-none-eabi-g++	
-    ln -s arm-eabi-gcc-nm arm-none-eabi-gcc-nm	
-    ln -s arm-eabi-gcov-tool arm-none-eabi-gcov-tool	
-    ln -s arm-eabi-ld arm-none-eabi-ld	
-    ln -s arm-eabi-objdump arm-none-eabi-objdump	
-    ln -s arm-eabi-strings arm-none-eabi-strings	
+    cp -r ../gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu/* ./	
+    cp -r ../gcc-arm-10.3-2021.07-x86_64-arm-none-eabi/* ./	
   fi	
 }
 
 build() {
+  # Avoid build warnings by editing a .config option in place instead of
+  # appending an option to .config, if an option is already present
+
   unset CFLAGS CXXFLAGS CPPFLAGS LDFLAGS
   
   if [ "$PHOST" = "x86_64" ]; then	
@@ -105,25 +93,86 @@ build() {
     export PATH="${srcdir}/aarch64/bin:${PATH}"	
   fi
 
-  cd ${srcdir}/arm-trusted-firmware-${atfver}
-  make realclean
-  make PLAT=rk3399
+  update_config() {
+    if ! grep -q "^$1=$2$" .config; then
+      if grep -q "^# $1 is not set$" .config; then
+        sed -i -e "s/^# $1 is not set$/$1=$2/g" .config
+      elif grep -q "^$1=" .config; then
+        sed -i -e "s/^$1=.*/$1=$2/g" .config
+      else
+        echo "$1=$2" >> .config
+      fi
+    fi
+  }
 
-  cd ${srcdir}/${_srcname}
+  if [ $opi4ver == "2" ]; then
+	  echo -e "\nBuilding TF-A for OrangePi 4 LTS...\n"
+	  cd ${srcdir}/arm-trusted-firmware-${_tfaver}
+	  make PLAT=rk3399
+	  cp build/rk3399/release/bl31/bl31.elf ../u-boot-${pkgver/rc/-rc}
 
-  make orangepi-4-rk3399_defconfig
+	  cd ${srcdir}/u-boot-${pkgver/rc/-rc}
 
-  echo 'CONFIG_IDENT_STRING=" Arch Linux ARM"' >> .config
-  make EXTRAVERSION=-${pkgrel} BL31=${srcdir}/arm-trusted-firmware-${atfver}/build/rk3399/release/bl31/bl31.elf
+	  echo -e "\nBuilding U-Boot for OrangePi 4/4 LTS...\n"
+	  make orangepi_4_lts_rk3399_defconfig
+
+
+	  update_config 'CONFIG_IDENT_STRING' '"Arch Linux ARM"' 
+	  update_config 'CONFIG_OF_LIBFDT_OVERLAY' 'y'
+	  update_config 'CONFIG_SPL_MMC_SDHCI_SDMA' 'n'
+	  update_config 'CONFIG_MMC_SDHCI_SDMA' 'y'
+	  update_config 'CONFIG_MMC_SPEED_MODE_SET' 'y'
+	  update_config 'CONFIG_MMC_IO_VOLTAGE' 'y'
+	  update_config 'CONFIG_MMC_UHS_SUPPORT' 'y'
+	  update_config 'CONFIG_MMC_HS400_ES_SUPPORT' 'y'
+	  update_config 'CONFIG_MMC_HS400_SUPPORT' 'y'
+	  update_config 'CONFIG_SYS_LOAD_ADDR' '0x800800'
+	  update_config 'CONFIG_TEXT_BASE' '0x00200000'
+	  update_config 'CONFIG_SPL_HAS_BSS_LINKER_SECTION' 'y'
+	  update_config 'CONFIG_SPL_BSS_START_ADDR' '0x400000'
+	  update_config 'CONFIG_SPL_BSS_MAX_SIZE' '0x2000'
+	  update_config 'CONFIG_HAS_CUSTOM_SYS_INIT_SP_ADDR' 'y'
+	  update_config 'CONFIG_CUSTOM_SYS_INIT_SP_ADDR' '0x300000'
+
+	  make EXTRAVERSION=-${pkgrel}
+  fi
+  if [ $opi4ver == "1" ]; then
+          echo -e "\nBuilding TF-A for OrangePi 4...\n"
+          cd ${srcdir}/arm-trusted-firmware-${_tfaver}
+          make PLAT=rk3399
+          cp build/rk3399/release/bl31/bl31.elf ../u-boot-${pkgver/rc/-rc}
+
+          cd ${srcdir}/u-boot-${pkgver/rc/-rc}
+
+          echo -e "\nBuilding U-Boot for OrangePi 4...\n"
+          make orangepi_4_rk3399_defconfig
+
+
+          update_config 'CONFIG_IDENT_STRING' '"Arch Linux ARM"'
+          update_config 'CONFIG_OF_LIBFDT_OVERLAY' 'y'
+          update_config 'CONFIG_SPL_MMC_SDHCI_SDMA' 'n'
+          update_config 'CONFIG_MMC_SDHCI_SDMA' 'y'
+          update_config 'CONFIG_MMC_SPEED_MODE_SET' 'y'
+          update_config 'CONFIG_MMC_IO_VOLTAGE' 'y'
+          update_config 'CONFIG_MMC_UHS_SUPPORT' 'y'
+          update_config 'CONFIG_MMC_HS400_ES_SUPPORT' 'y'
+          update_config 'CONFIG_MMC_HS400_SUPPORT' 'y'
+          update_config 'CONFIG_SYS_LOAD_ADDR' '0x800800'
+          update_config 'CONFIG_TEXT_BASE' '0x00200000'
+          update_config 'CONFIG_SPL_HAS_BSS_LINKER_SECTION' 'y'
+          update_config 'CONFIG_SPL_BSS_START_ADDR' '0x400000'
+          update_config 'CONFIG_SPL_BSS_MAX_SIZE' '0x2000'
+          update_config 'CONFIG_HAS_CUSTOM_SYS_INIT_SP_ADDR' 'y'
+          update_config 'CONFIG_CUSTOM_SYS_INIT_SP_ADDR' '0x300000'
+
+          make EXTRAVERSION=-${pkgrel}
+  fi
 }
 
 package() {
-  cd ${_srcname}
+  cd ${srcdir}/u-boot-${pkgver/rc/-rc}
 
-  mkdir -p "${pkgdir}/boot"
+  mkdir -p "${pkgdir}/boot/extlinux"
 
-  cp idbloader.img u-boot.itb "${pkgdir}/boot"
-
-  tools/mkimage -A arm -O linux -T script -C none -n "U-Boot boot script" -d ../boot.txt "${pkgdir}/boot/boot.scr"
-  cp ../{boot.txt,mkscr} "${pkgdir}"/boot
+  install -D -m 0644 idbloader.img u-boot.itb -t "${pkgdir}/boot"
 }

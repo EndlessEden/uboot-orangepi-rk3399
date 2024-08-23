@@ -9,7 +9,7 @@ create_config() {
   mkdir -p /boot/extlinux
   echo "LABEL Archlinux ARM
 KERNEL /boot/Image
-FDT /boot/dtbs/rockchip/rk3399-orangepi-4.dtb
+FDT /boot/dtbs/rockchip/rk3399-orangepi-4-lts.dtb
 APPEND initrd=/boot/initramfs-linux.img console=ttyS2,1500000 root=LABEL=ROOT rw rootwait audit=0 splash plymouth.ignore-serial-consoles" \
     > /boot/extlinux/extlinux.conf
 }
