@@ -26,7 +26,7 @@ Note: Replace "uboot-orangepi-4-2023.01-2-aarch64.img" with "uboot-orangepi-4-lt
         ```
 
 ## Installation (Manual)
-Based on installation instructions from [Arch Linux ARM](https://archlinuxarm.org/).
+Based on installation instructions from [Arch Linux ARM](https://archlinuxarm.org/). 
 
 Replace **sdX** in the following instructions with the device name for the SD card as it appears on your computer.
 
@@ -90,6 +90,7 @@ Replace **sdX** in the following instructions with the device name for the SD ca
 	```
 
 ## Building (x86_64 host)
+(NOTE: You will need the 'qemu-user-static' package to chroot into this root)
 1. Clone this repository
 `git clone https://github.com/endlesseden/uboot-orangepi-rk3399 -b orangepi4`
 
